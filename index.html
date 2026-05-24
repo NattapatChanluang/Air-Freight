@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>✈ Air Freight Rate Calculator</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+[data-theme="light"]{--bg:#f0f3f8;--surface:#fff;--surface2:#f8fafd;--border:#d0daea;--text:#0f2044;--text-muted:#5a7090;--card-bg:#fff;--sidebar-bg:#1a2540;--sidebar-hover:#253050;--sidebar-active:#2a5298;}
+[data-theme="dark"]{--bg:#090e1a;--surface:#0f1929;--surface2:#162035;--border:#1e3050;--text:#e0eaf8;--text-muted:#5a7a9c;--card-bg:#0f1929;--sidebar-bg:#0a1020;--sidebar-hover:#141e35;--sidebar-active:#1a3a6b;}
+:root{--navy:#0f2044;--navy-mid:#1a3a6b;--gold:#e8a020;--orange:#c0440a;--green:#1a7a3c;--green-bg:#e8f5ee;--purple:#5a2d8a;--red:#8b1a1a;--gcr:#1a3a6b;--per:#1a5a3a;--dgr:#6a2020;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"IBM Plex Sans Thai",sans-serif;background:var(--bg);color:var(--text);font-size:13px;min-height:100vh}
+
+/* ─── App Shell ─── */
+.app-shell{display:grid;grid-template-rows:50px 1fr;min-height:100vh;overflow:visible}
+.app-header{background:var(--navy);padding:0 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--gold);gap:10px;z-index:20}
+.app-header h1{color:#fff;font-size:15px;font-weight:600;white-space:nowrap}
+.app-header h1 span{color:var(--gold)}
+.header-tools{display:flex;align-items:center;gap:6px}
+.as-ind{font-size:11px;color:#4dd8a0;font-family:"IBM Plex Mono",monospace;opacity:0;transition:opacity .4s}
+.as-ind.show{opacity:1}
+.hbtn{padding:4px 10px;border-radius:5px;border:1px solid rgba(255,255,255,.25);cursor:pointer;font-size:11px;font-weight:600;color:#fff;background:rgba(255,255,255,.1);white-space:nowrap;font-family:"IBM Plex Sans Thai",sans-serif;transition:background .15s}
+.hbtn:hover{background:rgba(255,255,255,.22)}
+.hbtn-gold{border-color:var(--gold);color:var(--gold)}
+
+/* ─── Three-column layout ─── */
+.app-content{display:grid;grid-template-columns:220px 1fr 380px;min-height:calc(100vh - 50px);overflow:visible}
+
+/* ─── LEFT: Route Sidebar ─── */
+.sidebar{background:var(--sidebar-bg);display:flex;flex-direction:column;border-right:1px solid rgba(255,255,255,.06);overflow:visible;min-height:400px}
+.sidebar-header{padding:10px 12px 8px;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}
+.sidebar-search{width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:6px;color:#fff;font-size:11px;padding:5px 9px;outline:none;font-family:"IBM Plex Sans Thai",sans-serif}
+.sidebar-search::placeholder{color:rgba(255,255,255,.35)}
+.sidebar-filters{display:flex;gap:4px;margin-top:6px}
+.sf-btn{flex:1;padding:3px 0;border:1px solid rgba(255,255,255,.15);border-radius:4px;background:none;color:rgba(255,255,255,.5);font-size:10px;font-weight:600;cursor:pointer;font-family:"IBM Plex Sans Thai",sans-serif}
+.sf-btn.active{background:var(--sidebar-active);border-color:var(--sidebar-active);color:#fff}
+.sidebar-list{overflow-y:auto;max-height:calc(100vh - 200px);min-height:200px;padding:4px 6px}
+.sidebar-list::-webkit-scrollbar{width:4px}
+.sidebar-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:2px}
+.route-item{padding:8px 10px;border-radius:6px;cursor:pointer;margin-bottom:2px;border:1px solid transparent;transition:background .12s}
+.route-item:hover{background:var(--sidebar-hover)}
+.route-item.active{background:var(--sidebar-active);border-color:rgba(255,255,255,.1)}
+.route-item.fav .ri-star{color:var(--gold)}
+.ri-top{display:flex;align-items:center;justify-content:space-between;gap:4px}
+.ri-route{font-size:12px;font-weight:600;color:#fff;white-space:nowrap}
+.ri-star{color:rgba(255,255,255,.25);font-size:13px;cursor:pointer;background:none;border:none;padding:0;line-height:1;flex-shrink:0}
+.ri-star:hover{color:var(--gold)}
+.ri-sub{display:flex;gap:5px;margin-top:3px;flex-wrap:wrap}
+.ri-tag{font-size:9px;font-weight:600;padding:1px 6px;border-radius:3px;letter-spacing:.3px}
+.ri-tag.gcr{background:rgba(42,82,152,.5);color:#9ab8f0}
+.ri-tag.per{background:rgba(26,90,58,.5);color:#80c8a0}
+.ri-tag.dgr{background:rgba(106,32,32,.5);color:#f0a8a8}
+.ri-rate{font-size:11px;color:rgba(255,255,255,.5);font-family:"IBM Plex Mono",monospace;margin-top:2px}
+.sidebar-footer{padding:8px 8px;border-top:1px solid rgba(255,255,255,.08);flex-shrink:0;display:flex;flex-direction:column;gap:5px}
+.add-btn{width:100%;padding:6px;border-radius:5px;background:rgba(26,160,80,.2);border:1px solid rgba(26,160,80,.4);color:#4dd8a0;font-size:11px;font-weight:600;cursor:pointer;font-family:"IBM Plex Sans Thai",sans-serif}
+.add-btn:hover{background:rgba(26,160,80,.3)}
+.imp-btn{width:100%;padding:5px;border-radius:5px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.6);font-size:11px;cursor:pointer;font-family:"IBM Plex Sans Thai",sans-serif}
+
+/* ─── MIDDLE: Detail Panel ─── */
+.detail-panel{overflow-y:auto;background:var(--bg);display:flex;flex-direction:column;max-height:calc(100vh - 50px);min-height:300px}
+.detail-panel::-webkit-scrollbar{width:5px}
+.detail-panel::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.detail-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-muted);gap:8px}
+.detail-empty .de-icon{font-size:48px;opacity:.3}
+.dp-header{padding:14px 16px 10px;border-bottom:1px solid var(--border);flex-shrink:0;position:sticky;top:0;background:var(--bg);z-index:5}
+.dp-route{font-size:18px;font-weight:700;color:var(--text)}
+.dp-meta{display:flex;gap:8px;align-items:center;margin-top:5px;flex-wrap:wrap}
+.dp-tag{font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px}
+.dp-body{padding:12px 16px;flex:1}
+.dp-section{margin-bottom:14px}
+.dp-sec-title{font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.dp-sec-title::after{content:"";flex:1;height:1px;background:var(--border)}
+
+/* Cost edit form */
+.cost-form{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px}
+.cost-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:8px}
+.cf-item label{display:block;font-size:9px;font-weight:600;color:var(--text-muted);text-transform:uppercase;margin-bottom:3px}
+.cf-item input,.cf-item select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;font-weight:700;padding:4px 6px;font-family:"IBM Plex Mono",monospace;text-align:center}
+.cf-item input:focus,.cf-item select:focus{outline:none;border-color:var(--gold);background:var(--surface)}
+
+/* Selling rate display */
+.selling-tabs{display:flex;gap:0;border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:10px}
+.st-btn{flex:1;padding:6px;border:none;background:var(--surface);color:var(--text-muted);cursor:pointer;font-size:11px;font-weight:700;font-family:"IBM Plex Sans Thai",sans-serif;border-right:1px solid var(--border)}
+.st-btn:last-child{border-right:none}
+.st-btn.active.gcr{background:var(--gcr);color:#fff}
+.st-btn.active.per{background:var(--per);color:#fff}
+.st-btn.active.dgr{background:var(--dgr);color:#fff}
+
+/* Rate cards */
+.rate-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px}
+.rate-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 6px;text-align:center}
+.rate-card.has-val{border-color:var(--navy-light)}
+.rc-lbl{font-size:9px;font-weight:600;color:var(--text-muted);text-transform:uppercase}
+.rc-auto{font-size:13px;font-weight:700;color:var(--navy-light);font-family:"IBM Plex Mono",monospace;margin:2px 0}
+.rc-final{font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:700;color:var(--orange)}
+.rc-final input{border:none;background:transparent;text-align:center;font-size:11px;font-family:"IBM Plex Mono",monospace;color:var(--orange);font-weight:700;width:100%;padding:0}
+.rc-final input:focus{outline:none}
+.rc-profit{font-size:10px;margin-top:1px}
+
+/* Surcharge row */
+.surcharge-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.sc-item{flex:1;min-width:80px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 8px;text-align:center}
+.sc-lbl{font-size:9px;color:var(--text-muted);font-weight:600;text-transform:uppercase}
+.sc-val{font-size:12px;font-weight:700;font-family:"IBM Plex Mono",monospace;color:var(--navy-light);margin:1px 0}
+.sc-final input{border:none;background:transparent;text-align:center;font-size:11px;font-family:"IBM Plex Mono",monospace;color:var(--orange);font-weight:700;width:100%;padding:0}
+.sc-final input:focus{outline:none}
+
+/* Profit summary */
+.profit-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px}
+.pb-item{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:7px 6px;text-align:center}
+.pb-lbl{font-size:9px;color:var(--text-muted);font-weight:600;text-transform:uppercase}
+.pb-thb{font-size:13px;font-weight:700;font-family:"IBM Plex Mono",monospace;margin:2px 0}
+.pb-pct{font-size:10px;font-family:"IBM Plex Mono",monospace}
+
+/* Copy bar */
+.copy-bar{display:flex;gap:6px;flex-wrap:wrap;padding:10px 16px;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;position:sticky;bottom:0;z-index:5}
+.cbtn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:6px;border:1px solid var(--border);cursor:pointer;font-size:11px;font-weight:600;font-family:"IBM Plex Sans Thai",sans-serif;background:var(--surface2)}
+.cbtn:hover{background:var(--surface)}
+.cbtn-red{background:var(--red);color:#fff;border-color:var(--red)}
+.cbtn-red:hover{background:#a02020}
+.cbtn.copied{background:var(--green-bg);color:var(--green);border-color:#a8d8bc}
+.del-route-btn{margin-left:auto;background:none;border:1px solid var(--border);border-radius:5px;color:var(--text-muted);cursor:pointer;font-size:11px;padding:5px 10px;font-family:"IBM Plex Sans Thai",sans-serif}
+.del-route-btn:hover{color:#e24b4a;border-color:#e24b4a}
+
+/* ─── RIGHT: Settings Panel ─── */
+.settings-panel{background:var(--surface);border-left:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;max-height:calc(100vh - 50px);min-height:300px}
+.settings-panel::-webkit-scrollbar{width:5px}
+.settings-panel::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.sp-section{border-bottom:1px solid var(--border)}
+.sp-hdr{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;background:var(--surface)}
+.sp-hdr:hover{background:var(--surface2)}
+.sp-hdr-title{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text-muted)}
+.sp-hdr-chev{font-size:11px;color:var(--text-muted);transition:transform .2s}
+.sp-hdr-chev.open{transform:rotate(180deg)}
+.sp-body{padding:10px 14px;overflow:hidden}
+.sp-body.closed{display:none}
+
+/* Panels in settings */
+.panel{background:var(--navy);border-radius:7px;padding:10px 12px;margin-bottom:8px}
+.panel-gcr{background:var(--gcr);border-radius:7px;padding:9px 11px;margin-bottom:8px}
+.panel-per{background:var(--per);border-radius:7px;padding:9px 11px;margin-bottom:8px}
+.panel-dgr{background:var(--dgr);border-radius:7px;padding:9px 11px;margin-bottom:8px}
+.pt{font-size:12px;font-weight:700;margin-bottom:6px;color:#fff}
+.pt-sub{font-size:8px;letter-spacing:.8px;text-transform:uppercase;opacity:.6;margin-left:4px;font-weight:400}
+.cfg-fields{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.fgroup label{display:block;font-size:10px;font-weight:500;margin-bottom:2px;color:#a8c8f0}
+.ipt{width:100%;background:#fff;border:2px solid #a0b8d8;border-radius:5px;color:#0f2044;font-size:12px;font-weight:700;padding:4px 6px;font-family:"IBM Plex Mono",monospace;text-align:center;-webkit-text-fill-color:#0f2044;color-scheme:light}
+.ipt:focus{outline:none;border-color:var(--gold)}
+.ipt-date{width:100%;background:#fff;border:2px solid #a0b8d8;border-radius:5px;color:#0f2044;font-size:11px;font-weight:700;padding:4px 6px;-webkit-text-fill-color:#0f2044;color-scheme:light}
+.hint{font-size:9px;color:#7a9cc8;margin-top:1px}
+.pf-grid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:2px}
+.pf-item{min-width:0}
+.pf-item label{display:block;font-size:7.5px;margin-bottom:2px;text-align:center;font-weight:500;color:rgba(255,255,255,.7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pf-item input{width:100%;background:#fff;border:1px solid rgba(255,255,255,.4);border-radius:3px;color:#0f2044;font-size:10px;font-weight:700;padding:2px 1px;font-family:"IBM Plex Mono",monospace;text-align:center;min-width:0}
+.pf-item input:focus{outline:none;border-color:var(--gold)}
+
+/* CW inside settings */
+.cw-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px}
+.cw-f label{font-size:9px;font-weight:600;color:var(--text-muted);display:block;margin-bottom:2px;text-transform:uppercase}
+.cw-f input,.cw-f select{width:100%;padding:4px 7px;border:1px solid var(--border);border-radius:4px;background:var(--surface2);color:var(--text);font-size:12px;font-weight:700;font-family:"IBM Plex Mono",monospace;text-align:center}
+.cw-result-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.cw-res{border-radius:6px;padding:7px;text-align:center}
+.cw-res .rl{font-size:9px;color:rgba(255,255,255,.7);margin-bottom:2px}
+.cw-res .rv{font-size:16px;font-weight:700;color:#fff;font-family:"IBM Plex Mono",monospace}
+
+/* History */
+.hist-entry{padding:7px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;font-size:11px}
+.hist-entry:last-child{border-bottom:none}
+.hist-time{font-family:"IBM Plex Mono",monospace;color:var(--text-muted);font-size:10px;white-space:nowrap}
+.hist-note{flex:1;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hist-restore{background:none;border:1px solid var(--border);border-radius:3px;cursor:pointer;font-size:10px;padding:2px 6px;color:var(--text-muted);white-space:nowrap}
+.hist-restore:hover{border-color:var(--navy-mid);color:var(--navy-mid)}
+
+/* Summary cards */
+.sum-cards{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.sum-card{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px}
+.sum-card .sl{font-size:9px;color:var(--text-muted);text-transform:uppercase;font-weight:600;margin-bottom:3px}
+.sum-card .sv{font-size:15px;font-weight:700;font-family:"IBM Plex Mono",monospace}
+
+/* Import Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;display:flex;align-items:center;justify-content:center}
+.modal-box{background:var(--surface);border-radius:10px;padding:18px;max-width:620px;width:92%;max-height:85vh;display:flex;flex-direction:column;gap:10px;overflow:auto}
+.import-area{border:2px dashed var(--border);border-radius:7px;padding:14px;text-align:center;cursor:pointer;background:var(--surface2)}
+.import-area:hover{border-color:var(--navy-mid)}
+.import-prev{overflow-x:auto;max-height:180px;border:1px solid var(--border);border-radius:5px}
+.import-prev table th{background:var(--navy);color:#c8d8f0;padding:3px 6px;font-size:10px}
+.import-prev table td{padding:3px 6px;border-bottom:1px solid var(--border);font-size:11px}
+.col-map-row{display:grid;grid-template-columns:80px 16px 1fr;gap:5px;align-items:center;font-size:11px;margin-bottom:3px}
+.col-map-sel{width:100%;padding:3px 5px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);font-size:11px}
+.btn-row-modal{display:flex;gap:8px;justify-content:flex-end}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:5px;border:1px solid var(--border);cursor:pointer;font-size:11px;font-weight:600;font-family:"IBM Plex Sans Thai",sans-serif}
+.btn-add{background:var(--green-bg);color:var(--green);border-color:#a8d8bc}
+.btn-clr{background:var(--surface);color:var(--text-muted)}
+
+@media print{
+  .sidebar,.settings-panel{display:none}
+  .app-content{grid-template-columns:1fr}
+  .detail-panel{height:auto;overflow:visible}
+}
+
+/* ─── Password Lock ─── */
+.pw-overlay{position:fixed;inset:0;background:var(--navy);z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+.pw-box{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:32px 36px;text-align:center;width:320px}
+.pw-logo{font-size:32px;margin-bottom:8px}
+.pw-title{color:#fff;font-size:18px;font-weight:700;margin-bottom:4px}
+.pw-sub{color:#7a9cc8;font-size:12px;margin-bottom:20px}
+.pw-input{width:100%;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.2);border-radius:7px;color:#fff;font-size:15px;font-weight:600;padding:10px 14px;font-family:'IBM Plex Mono',monospace;text-align:center;letter-spacing:2px;outline:none;-webkit-text-fill-color:#fff;color-scheme:dark}
+.pw-input:focus{border-color:var(--gold)}
+.pw-input.error{border-color:#e24b4a;animation:shake .3s}
+.pw-btn{width:100%;margin-top:12px;padding:10px;border-radius:7px;border:none;background:var(--gold);color:var(--navy);font-size:14px;font-weight:700;cursor:pointer;font-family:'IBM Plex Sans Thai',sans-serif;transition:opacity .15s}
+.pw-btn:hover{opacity:.85}
+.pw-err{color:#ff9090;font-size:12px;margin-top:8px;min-height:18px}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+</style>
+</head>
+<body>
+
+<div class="pw-overlay" id="pwOverlay">
+  <div class="pw-box">
+    <div class="pw-logo">✈</div>
+    <div class="pw-title">Air Freight Calculator</div>
+    <div class="pw-sub">NYL Pricing Tool — กรุณาใส่รหัสผ่าน</div>
+    <input class="pw-input" type="password" id="pwInput" placeholder="••••••••••••••" maxlength="30"
+      onkeydown="if(event.key==='Enter')checkPW()"
+      oninput="document.getElementById('pwErr').textContent=''">
+    <button class="pw-btn" onclick="checkPW()">🔓 เข้าใช้งาน</button>
+    <div class="pw-err" id="pwErr"></div>
+  </div>
+</div>
+<div class="app-shell">
+
+<!-- Header -->
+<div class="app-header">
+  <h1>✈ Air Freight <span>Rate Calculator</span></h1>
+  <div class="header-tools">
+    <span class="as-ind" id="asInd">💾 Saved</span>
+    <button class="hbtn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+    <button class="hbtn" onclick="window.print()">🖨</button>
+    <button class="hbtn hbtn-gold" onclick="saveHistory()">📌 Version</button>
+  </div>
+</div>
+
+<!-- Three-column shell -->
+<div class="app-content">
+
+<!-- ═══ LEFT SIDEBAR ═══ -->
+<div class="sidebar">
+  <div class="sidebar-header">
+    <input class="sidebar-search" type="text" id="sideSearch" placeholder="🔍 ค้นหา route..." oninput="renderSidebar()">
+    <div class="sidebar-filters">
+      <button class="sf-btn active" id="sf-all" onclick="setSF('all')">ALL</button>
+      <button class="sf-btn" id="sf-GCR" onclick="setSF('GCR')" style="color:#9ab8f0">GCR</button>
+      <button class="sf-btn" id="sf-PER" onclick="setSF('PER')" style="color:#80c8a0">PER</button>
+      <button class="sf-btn" id="sf-DGR" onclick="setSF('DGR')" style="color:#f0a8a8">DGR</button>
+      <button class="sf-btn" id="sf-fav" onclick="setSF('fav')" style="color:var(--gold)">⭐</button>
+    </div>
+  </div>
+  <div class="sidebar-list" id="sidebarList"></div>
+  <div class="sidebar-footer">
+    <button class="add-btn" onclick="addNewRoute()">＋ เพิ่ม Route</button>
+    <button class="imp-btn" onclick="openImport()">📥 Import CSV</button>
+    <button class="imp-btn" style="background:rgba(220,50,50,.15);border-color:rgba(220,50,50,.4);color:#ff9090" onclick="clearAllRoutes()">🗑 ลบทั้งหมด</button>
+  </div>
+</div>
+
+<!-- ═══ MIDDLE DETAIL ═══ -->
+<div class="detail-panel" id="detailPanel">
+  <div class="detail-empty" id="detailEmpty">
+    <div class="de-icon">✈</div>
+    <div style="font-size:14px;font-weight:600">เลือก Route จากซ้าย</div>
+    <div style="font-size:12px">หรือกด ＋ เพิ่ม Route ใหม่</div>
+  </div>
+</div>
+
+<!-- ═══ RIGHT SETTINGS ═══ -->
+<div class="settings-panel">
+
+  <!-- Exchange Rate -->
+  <div class="sp-section">
+    <div class="sp-hdr" onclick="toggleSP(this)">
+      <span class="sp-hdr-title">Exchange Rate & Handling</span>
+      <span class="sp-hdr-chev open">▼</span>
+    </div>
+    <div class="sp-body">
+      <div class="panel">
+        <div class="cfg-fields">
+          <div class="fgroup"><label>Revenue</label><input class="ipt" type="number" id="exRateRev" value="33" step="0.01" min="1" style="background:#fff;color:#0f2044;-webkit-text-fill-color:#0f2044;color-scheme:light;font-weight:700"><div class="hint">Selling → THB</div></div>
+          <div class="fgroup"><label>Cost</label><input class="ipt" type="number" id="exRateCost" value="32" step="0.01" min="1" style="background:#fff;color:#0f2044;-webkit-text-fill-color:#0f2044;color-scheme:light;font-weight:700"><div class="hint">ต้นทุน</div></div>
+          <div class="fgroup"><label>Convert</label><input class="ipt" type="number" id="exRateConv" value="32.50" step="0.01" min="1" style="background:#fff;color:#0f2044;-webkit-text-fill-color:#0f2044;color-scheme:light;font-weight:700"><div class="hint">Selling USD</div></div>
+          <div class="fgroup"><label>Handling NYL</label><input class="ipt" type="number" id="handling" value="31" step="0.01" min="0" style="background:#fff;color:#0f2044;-webkit-text-fill-color:#0f2044;color-scheme:light;font-weight:700"><div class="hint">THB/kg</div></div>
+          <div class="fgroup" style="grid-column:1/-1"><label>Validity</label><input class="ipt-date" type="date" id="validity" style="background:#fff;color:#0f2044;-webkit-text-fill-color:#0f2044;color-scheme:light"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GCR Profit -->
+  <div class="sp-section">
+    <div class="sp-hdr" onclick="toggleSP(this)">
+      <span class="sp-hdr-title" style="color:#9ab8f0">GCR — กำไร THB/kg</span>
+      <span class="sp-hdr-chev open">▼</span>
+    </div>
+    <div class="sp-body">
+      <div class="panel-gcr"><div class="pf-grid">
+        <div class="pf-item"><label>MIN</label><input type="number" id="gcr_min" value="0" step="1"></div>
+        <div class="pf-item"><label>NORM</label><input type="number" id="gcr_norm" value="0" step="1"></div>
+        <div class="pf-item"><label>+45</label><input type="number" id="gcr_45" value="10" step="1"></div>
+        <div class="pf-item"><label>+100</label><input type="number" id="gcr_100" value="10" step="1"></div>
+        <div class="pf-item"><label>+300</label><input type="number" id="gcr_300" value="6" step="1"></div>
+        <div class="pf-item"><label>+500</label><input type="number" id="gcr_500" value="4" step="1"></div>
+        <div class="pf-item"><label>+1000</label><input type="number" id="gcr_1000" value="2" step="1"></div>
+        <div class="pf-item"><label>FUEL</label><input type="number" id="gcr_fuel" value="0.10" step="0.01"></div>
+        <div class="pf-item"><label>CRISIS</label><input type="number" id="gcr_crisis" value="0" step="0.01"></div>
+        <div class="pf-item"><label>MSC</label><input type="number" id="gcr_msc" value="0" step="0.01"></div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- PER Profit -->
+  <div class="sp-section">
+    <div class="sp-hdr" onclick="toggleSP(this)">
+      <span class="sp-hdr-title" style="color:#80c8a0">PER — กำไร THB/kg</span>
+      <span class="sp-hdr-chev open">▼</span>
+    </div>
+    <div class="sp-body">
+      <div class="panel-per"><div class="pf-grid">
+        <div class="pf-item"><label>MIN</label><input type="number" id="per_min" value="0" step="1"></div>
+        <div class="pf-item"><label>NORM</label><input type="number" id="per_norm" value="0" step="1"></div>
+        <div class="pf-item"><label>+45</label><input type="number" id="per_45" value="15" step="1"></div>
+        <div class="pf-item"><label>+100</label><input type="number" id="per_100" value="12" step="1"></div>
+        <div class="pf-item"><label>+300</label><input type="number" id="per_300" value="8" step="1"></div>
+        <div class="pf-item"><label>+500</label><input type="number" id="per_500" value="6" step="1"></div>
+        <div class="pf-item"><label>+1000</label><input type="number" id="per_1000" value="4" step="1"></div>
+        <div class="pf-item"><label>FUEL</label><input type="number" id="per_fuel" value="0.10" step="0.01"></div>
+        <div class="pf-item"><label>CRISIS</label><input type="number" id="per_crisis" value="0" step="0.01"></div>
+        <div class="pf-item"><label>MSC</label><input type="number" id="per_msc" value="0" step="0.01"></div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- DGR Profit -->
+  <div class="sp-section">
+    <div class="sp-hdr" onclick="toggleSP(this)">
+      <span class="sp-hdr-title" style="color:#f0a8a8">DGR — กำไร THB/kg</span>
+      <span class="sp-hdr-chev open">▼</span>
+    </div>
+    <div class="sp-body">
+      <div class="panel-dgr"><div class="pf-grid">
+        <div class="pf-item"><label>MIN</label><input type="number" id="dgr_min" value="0" step="1"></div>
+        <div class="pf-item"><label>NORM</label><input type="number" id="dgr_norm" value="0" step="1"></div>
+        <div class="pf-item"><label>+45</label><input type="number" id="dgr_45" value="20" step="1"></div>
+        <div class="pf-item"><label>+100</label><input type="number" id="dgr_100" value="16" step="1"></div>
+        <div class="pf-item"><label>+300</label><input type="number" id="dgr_300" value="10" step="1"></div>
+        <div class="pf-item"><label>+500</label><input type="number" id="dgr_500" value="8" step="1"></div>
+        <div class="pf-item"><label>+1000</label><input type="number" id="dgr_1000" value="5" step="1"></div>
+        <div class="pf-item"><label>FUEL</label><input type="number" id="dgr_fuel" value="0.10" step="0.01"></div>
+        <div class="pf-item"><label>CRISIS</label><input type="number" id="dgr_crisis" value="0" step="0.01"></div>
+        <div class="pf-item"><label>MSC</label><input type="number" id="dgr_msc" value="0" step="0.01"></div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- CW Calc -->
+  <div class="sp-section">
+    <div class="sp-hdr" onclick="toggleSP(this)">
+      <span class="sp-hdr-title">CW Calculator</span>
+      <span class="sp-hdr-chev">▼</span>
+    </div>
+    <div class="sp-body closed">
+      <div class="cw-grid">
+        <div class="cw-f"><label>Pieces</label><input type="number" id="cw_pcs" value="1" min="1" oninput="calcCW()"></div>
+        <div class="cw-f"><label>L (cm)</label><input type="number" id="cw_l" value="0" step="0.1" oninput="calcCW()"></div>
+        <div class="cw-f"><label>W (cm)</label><input type="number" id="cw_w" value="0" step="0.1" oninput="calcCW()"></div>
+        <div class="cw-f"><label>H (cm)</label><input type="number" id="cw_h" value="0" step="0.1" oninput="calcCW()"></div>
+        <div class="cw-f"><label>Act. Wt (kg)</label><input type="number" id="cw_aw" value="0" step="0.1" oninput="calcCW()"></div>
+        <div class="cw-f"><label>Factor</label><select id="cw_factor" oninput="calcCW()"><option value="6000">6000</option><option value="5000">5000</option></select></div>
+      </div>
+      <div class="cw-result-row">
+        <div class="cw-res" style="background:var(--navy)"><div class="rl">Vol. Weight</div><div class="rv" id="cw_vol">0.00</div><div style="font-size:9px;color:rgba(255,255,255,.5)">kg</div></div>
+        <div class="cw-res" style="background:var(--orange)"><div class="rl">Chargeable</div><div class="rv" id="cw_cw">0.00</div><div style="font-size:9px;color:rgba(255,255,255,.5)">kg</div></div>
+        <div class="cw-res" style="background:var(--green)"><div class="rl">Volume</div><div class="rv" id="cw_tvol">0.000</div><div style="font-size:9px;color:rgba(255,255,255,.5)">CBM</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div class="sp-section">
+    <div class="sp-hdr" onclick="toggleSP(this)">
+      <span class="sp-hdr-title">🕐 Version History</span>
+      <span class="sp-hdr-chev">▼</span>
+    </div>
+    <div class="sp-body closed">
+      <div id="histList" style="max-height:200px;overflow-y:auto"></div>
+      <div style="padding-top:8px"><button class="btn btn-clr" onclick="clearHistory()" style="font-size:11px">🗑 Clear History</button></div>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="sp-section">
+    <div class="sp-hdr" onclick="toggleSP(this);renderSummary()">
+      <span class="sp-hdr-title">💰 Summary</span>
+      <span class="sp-hdr-chev">▼</span>
+    </div>
+    <div class="sp-body closed" id="summaryBody">
+      <div class="sum-cards" id="sumCards"></div>
+    </div>
+  </div>
+
+</div><!-- settings-panel -->
+</div><!-- app-content -->
+</div><!-- app-shell -->
+
+<!-- Import Modal -->
+<div id="importModal" style="display:none" class="modal-overlay" onclick="if(event.target===this)closeImport()">
+  <div class="modal-box">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:14px;font-weight:700;color:var(--text)">📥 Import Cost Data</span>
+      <button onclick="closeImport()" style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-muted)">✕</button>
+    </div>
+    <div class="import-area" onclick="document.getElementById('impFile').click()" ondragover="event.preventDefault()" ondrop="event.preventDefault();readFile(event.dataTransfer.files[0])">
+      <div style="font-size:24px">📂</div>
+      <div style="font-weight:600;margin-top:5px;font-size:13px">คลิกหรือลากไฟล์ CSV/TSV</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:3px">หรือวาง (Ctrl+V) จาก Excel</div>
+      <input type="file" id="impFile" accept=".csv,.tsv,.txt" style="display:none" onchange="readFile(event.target.files[0])">
+    </div>
+    <textarea id="impPaste" placeholder="วาง (Ctrl+V) ข้อมูลจาก Excel..." style="width:100%;height:70px;padding:7px;border:1px solid var(--border);border-radius:5px;font-family:IBM Plex Mono,monospace;font-size:11px;resize:vertical;background:var(--surface);color:var(--text)" oninput="parsePasted()"></textarea>
+    <div id="impPreviewArea" style="display:none">
+      <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:5px">Preview</div>
+      <div class="import-prev" id="impPreview"></div>
+      <div style="font-size:12px;font-weight:600;color:var(--text);margin:8px 0 5px">Column Mapping</div>
+      <div id="colMapArea" style="max-height:180px;overflow-y:auto"></div>
+    </div>
+    <div class="btn-row-modal">
+      <button class="btn btn-clr" onclick="closeImport()">ยกเลิก</button>
+      <button class="btn btn-add" id="impConfirmBtn" onclick="confirmImport()" style="display:none">✓ Import</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   CONSTANTS
+══════════════════════════════════════════ */
+const SELL_F=['min','norm','p45','p100','p300','p500','p1000','fuel','crisis','msc'];
+const NUM_F=['min','norm','p45','p100','p300','p500','p1000','fuel','crisis','msc'];
+const TXT_F=['origin','dest','airline','transit','operate','tt','comm'];
+const TXT_F2=['service','aircraft','terminal','remark'];
+const HDR=['ORIGIN','DEST','AIRLINE','MIN','NORMAL','+45','+100','+300','+500','+1000','FUEL','CRISIS','MSC'];
+const SURCHARGE_IDX=new Set([7,8,9]);
+const WEIGHT_KG=[1,1,45,100,300,500,1000,1,1,1];
+const TABS=['gcr','per','dgr'];
+const PROFIT_SFXS=['_min','_norm','_45','_100','_300','_500','_1000','_fuel','_crisis','_msc'];
+const TAB_COLORS={gcr:'h-gcr',per:'h-per',dgr:'h-dgr'};
+const TAB_THBS={gcr:'thb-gcr',per:'thb-per',dgr:'thb-dgr'};
+const TAB_NAMES={gcr:'GCR — General Cargo',per:'PER — Perishable',dgr:'DGR — Dangerous Goods'};
+
+let rows=[],manualSell={},history_=[],favorites=new Set();
+let asTimer=null,darkMode=false,lang='th',compactMode=false;
+let viewMode='table',impParsed=[],impHeaders=[];
+
+/* ══════════════════════════════════════════
+   UTILS
+══════════════════════════════════════════ */
+function roundUp5(v){return Math.ceil(v*20)/20;}
+function gn(v){return parseFloat(v)||0;}
+function getEx(){return{rev:gn(document.getElementById('exRateRev').value)||33,cost:gn(document.getElementById('exRateCost').value)||32,conv:gn(document.getElementById('exRateConv').value)||32.5};}
+function getProfit(tab,i){const el=document.getElementById(tab+PROFIT_SFXS[i]);return el?gn(el.value):0;}
+function getLS(key){
+  const cur=localStorage.getItem('af9_'+key);if(cur!==null)return cur;
+  for(const p of['af8_','af7_','af6_']){const o=localStorage.getItem(p+key);if(o!==null)return o;}
+  return null;
+}
+function setLS(key,val){localStorage.setItem('af9_'+key,val);}
+function triggerAS(){
+  clearTimeout(asTimer);
+  asTimer=setTimeout(()=>{
+    try{
+      setLS('rows',JSON.stringify(rows));
+      setLS('manual',JSON.stringify(manualSell));
+      setLS('favs',JSON.stringify([...favorites]));
+      const cfg={};
+      document.querySelectorAll('input[id],select[id]').forEach(el=>{if(el.id&&el.type!=='file')cfg[el.id]=el.value;});
+      setLS('cfg',JSON.stringify(cfg));
+      const ind=document.getElementById('asInd');ind.classList.add('show');setTimeout(()=>ind.classList.remove('show'),1800);
+    }catch(e){}
+  },600);
+}
+function loadSaved(){
+  try{
+    const s=getLS('rows');if(s)rows=JSON.parse(s);
+    const m=getLS('manual');if(m)manualSell=JSON.parse(m);
+    const h=getLS('history');if(h)history_=JSON.parse(h);
+    const fv=getLS('favs');if(fv)favorites=new Set(JSON.parse(fv));
+    const c=getLS('cfg');
+    if(c){const cfg=JSON.parse(c);Object.keys(cfg).forEach(id=>{const el=document.getElementById(id);if(el&&el.type!=='file')el.value=cfg[id];});}
+    if(getLS('dark')==='1'){darkMode=true;document.documentElement.setAttribute('data-theme','dark');document.getElementById('themeBtn').textContent='☀ Light';}
+  }catch(e){}
+}
+
+/* ══════════════════════════════════════════
+   HISTORY
+══════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════
+   FAVORITES
+══════════════════════════════════════════ */
+function scrollToRow(id){
+  const el=document.getElementById('cr_'+id);
+  if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.outline='2px solid var(--gold)';setTimeout(()=>el.style.outline='',2000);}
+}
+
+function calcSelling(r,tab){
+  const ex=getEx();const hnd=gn(document.getElementById('handling').value);const res={};
+  SELL_F.forEach((f,i)=>{
+    const cv=r[f];if(cv===''||cv===undefined||cv===null){res[f]='';return;}
+    const cost=gn(cv);const profit=getProfit(tab,i);
+    let sell;
+    if(i===0){sell=cost/ex.conv;}
+    else if(SURCHARGE_IDX.has(i)){sell=cost/ex.conv+profit;}
+    else{sell=(cost+hnd+profit)/ex.conv;}
+    res[f]=roundUp5(sell).toFixed(2);
+  });
+  return res;
+}
+function getManual(r,tab){
+  const sel=calcSelling(r,tab);const man=(manualSell[r.id]||{})[tab]||{};const res={};
+  SELL_F.forEach(f=>{res[f]=man[f]!==undefined?man[f]:sel[f];});return res;
+}
+function calcProfitKg(r,tab){
+  const ex=getEx();const hnd=gn(document.getElementById('handling').value);
+  const ms=getManual(r,tab);const res={};
+  const sF=gn(ms['fuel']),sC=gn(ms['crisis']),sM=gn(ms['msc']);
+  const cF=gn(r['fuel']),cC=gn(r['crisis']),cMs=gn(r['msc']);
+  SELL_F.forEach((f,i)=>{
+    const cv=r[f];if(cv===''||cv===undefined||ms[f]===''||ms[f]===undefined){res[f]='';return;}
+    const cost=gn(cv);const sell=gn(ms[f]);
+    if(i===0){res[f]=(sell*ex.rev-cost).toFixed(2);}
+    else if(SURCHARGE_IDX.has(i)){res[f]='';}
+    else{const w=WEIGHT_KG[i];res[f]=((sell+sF+sC+sM)*w*ex.rev-(cost+cF+cC+cMs+hnd)*w).toFixed(0);}
+  });return res;
+}
+function calcProfitPct(r,tab){
+  const ex=getEx();const hnd=gn(document.getElementById('handling').value);
+  const ms=getManual(r,tab);const res={};
+  const sF=gn(ms['fuel']),sC=gn(ms['crisis']),sM=gn(ms['msc']);
+  const cF=gn(r['fuel']),cC=gn(r['crisis']),cMs=gn(r['msc']);
+  SELL_F.forEach((f,i)=>{
+    const cv=r[f];if(cv===''||cv===undefined||ms[f]===''||ms[f]===undefined){res[f]='';return;}
+    const cost=gn(cv);const sell=gn(ms[f]);
+    if(i===0){const rev=sell*ex.rev;if(!rev){res[f]='';return;}res[f]=((sell*ex.rev-cost)/rev*100).toFixed(2)+'%';}
+    else if(SURCHARGE_IDX.has(i)){res[f]='';}
+    else{const w=WEIGHT_KG[i];const rev=(sell+sF+sC+sM)*w*ex.rev;const base=(cost+cF+cC+cMs+hnd)*w;if(!rev){res[f]='';return;}res[f]=((rev-base)/rev*100).toFixed(2)+'%';}
+  });return res;
+}
+
+/* ═══════════════════════════════════════════════
+   SIDEBAR UI
+═══════════════════════════════════════════════ */
+let sfFilter = 'all';
+let selectedId = null;
+let detailTab = 'gcr';
+
+function setSF(f){
+  sfFilter = f;
+  document.querySelectorAll('.sf-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('sf-' + f)?.classList.add('active');
+  renderSidebar();
+}
+
+function renderSidebar(){
+  const q = (document.getElementById('sideSearch').value || '').toLowerCase();
+  const list = document.getElementById('sidebarList');
+  let filtered = rows.filter(r => {
+    if(q && !(r.origin||'').toLowerCase().includes(q) && !(r.dest||'').toLowerCase().includes(q) && !(r.airline||'').toLowerCase().includes(q)) return false;
+    if(sfFilter === 'fav') return favorites.has(r.id);
+    if(sfFilter !== 'all') return (r.comm||'').toUpperCase() === sfFilter;
+    return true;
+  });
+  // Favorites first
+  filtered.sort((a, b) => (favorites.has(b.id) ? 1 : 0) - (favorites.has(a.id) ? 1 : 0));
+
+  list.innerHTML = filtered.map(r => {
+    const tab = (r.comm || 'GCR').toLowerCase();
+    const sel = calcSelling(r, tab);
+    const v45 = sel.p45 || '-';
+    const isFav = favorites.has(r.id);
+    const isActive = r.id === selectedId;
+    const tagCls = tab;
+    return `<div class="route-item ${isActive ? 'active' : ''} ${isFav ? 'fav' : ''}" onclick="selectRoute('${r.id}')">
+      <div class="ri-top">
+        <span class="ri-route">${r.origin||'?'} → ${r.dest||'?'}</span>
+        <button class="ri-star" onclick="event.stopPropagation();toggleFav('${r.id}')" title="Favorite">${isFav ? '⭐' : '☆'}</button>
+      </div>
+      <div class="ri-sub">
+        <span class="ri-tag ${tagCls}">${r.airline||'?'}</span>
+        <span class="ri-tag ${tagCls}">${r.comm||'GCR'}</span>
+      </div>
+      <div class="ri-rate">+45: ${v45} USD</div>
+    </div>`;
+  }).join('');
+
+  if(!filtered.length) list.innerHTML = '<div style="padding:16px;text-align:center;color:rgba(255,255,255,.3);font-size:12px">ไม่พบ route</div>';
+}
+
+function selectRoute(id){
+  selectedId = id;
+  renderSidebar();
+  renderDetail();
+}
+
+/* ═══════════════════════════════════════════════
+   DETAIL PANEL
+═══════════════════════════════════════════════ */
+function renderDetail(){
+  const dp = document.getElementById('detailPanel');
+  const r = rows.find(x => x.id === selectedId);
+  if(!r){ dp.innerHTML = '<div class="detail-empty" id="detailEmpty"><div class="de-icon">✈</div><div style="font-size:14px;font-weight:600">เลือก Route จากซ้าย</div></div>'; return; }
+
+  const tab = detailTab;
+  const tabBg = {gcr: 'var(--gcr)', per: 'var(--per)', dgr: 'var(--dgr)'}[tab] || 'var(--gcr)';
+  const sel = calcSelling(r, tab);
+  const man = (manualSell[r.id] || {})[tab] || {};
+  const kg = calcProfitKg(r, tab);
+  const pct = calcProfitPct(r, tab);
+  const validity = document.getElementById('validity').value;
+  const vStr = validity ? new Date(validity).toLocaleDateString('th-TH') : '';
+
+  // Rate bands to show in main grid (+45 to +1000)
+  const rateBands = [
+    {lbl:'+45',f:'p45'},{lbl:'+100',f:'p100'},{lbl:'+300',f:'p300'},{lbl:'+500',f:'p500'},{lbl:'+1000',f:'p1000'}
+  ];
+  const getVal = (f) => { const mv = man[f]; return mv !== undefined ? mv : sel[f]; };
+
+  const rateCards = rateBands.map(({lbl, f}) => {
+    const autoVal = sel[f] || '';
+    const finalVal = getVal(f);
+    const pVal = kg[f] || '';
+    const pctVal = pct[f] || '';
+    const n = parseFloat(pVal);
+    const pClr = !pVal ? '#888' : n > 0 ? 'var(--green)' : n < 0 ? '#c0440a' : '#888';
+    const hasVal = autoVal !== '';
+    return `<div class="rate-card ${hasVal ? 'has-val' : ''}" data-f="${f}">
+      <div class="rc-lbl">${lbl}</div>
+      <div class="rc-auto">${autoVal || '-'}</div>
+      <div class="rc-final"><input type="number" step="0.05" value="${finalVal || ''}" placeholder="-" oninput="updManual('${r.id}','${tab}','${f}',this.value)"></div>
+      <div class="rc-profit" style="color:${pClr}">${pVal || '-'}</div>
+    </div>`;
+  }).join('');
+
+  // Surcharges
+  const surchFs = [{lbl:'MIN',f:'min'},{lbl:'NORM',f:'norm'},{lbl:'FUEL',f:'fuel'},{lbl:'CRISIS',f:'crisis'},{lbl:'MSC',f:'msc'}];
+  const scCards = surchFs.map(({lbl, f}) => {
+    const autoVal = sel[f] || '';
+    const finalVal = getVal(f);
+    const hasVal = autoVal !== '';
+    return `<div class="sc-item">
+      <div class="sc-lbl">${lbl}</div>
+      <div class="sc-val">${autoVal || '-'}</div>
+      <div class="sc-final"><input type="number" step="0.05" value="${finalVal || ''}" placeholder="-" oninput="updManual('${r.id}','${tab}','${f}',this.value)"></div>
+    </div>`;
+  }).join('');
+
+  // Profit summary
+  const profitBands = [{lbl:'+45',f:'p45'},{lbl:'+100',f:'p100'},{lbl:'+300',f:'p300'},{lbl:'+500',f:'p500'},{lbl:'+1000',f:'p1000'}];
+  const profitCards = profitBands.map(({lbl, f}) => {
+    const thb = kg[f] || '';
+    const p = pct[f] || '';
+    const n = parseFloat(thb);
+    const clr = !thb ? 'var(--text-muted)' : n > 0 ? 'var(--green)' : n < 0 ? '#c0440a' : 'var(--text-muted)';
+    const pn = parseFloat(p);
+    const pclr = !p ? 'var(--text-muted)' : pn > 5 ? 'var(--green)' : pn > 0 ? '#7a5500' : '#c0440a';
+    return `<div class="pb-item">
+      <div class="pb-lbl">${lbl}</div>
+      <div class="pb-thb" style="color:${clr}">${thb || '-'}</div>
+      <div class="pb-pct" style="color:${pclr}">${p || '-'}</div>
+    </div>`;
+  }).join('');
+
+  // Cost inputs
+  const costTextF = ['origin','dest','airline','transit','operate','tt'];
+  const costNumF  = ['min','norm','p45','p100','p300','p500','p1000','fuel','crisis','msc'];
+  const costExtra = ['service','aircraft','terminal','remark'];
+  const costInputs = [...costTextF,...costNumF,...costExtra].map(f => {
+    const isN = costNumF.includes(f);
+    const lbl = {origin:'Origin',dest:'Dest',airline:'Airline',transit:'Transit',operate:'Operate',tt:'T/T',min:'MIN',norm:'NORMAL',p45:'+45',p100:'+100',p300:'+300',p500:'+500',p1000:'+1000',fuel:'FUEL',crisis:'CRISIS',msc:'MSC',service:'Service',aircraft:'Aircraft',terminal:'Terminal',remark:'Remark'}[f] || f;
+    if(f === 'comm') return '';
+    if(f === 'operate' || f === 'transit') {
+      return `<div class="cf-item"><label>${lbl}</label><input type="text" value="${r[f]||''}" oninput="updateRow('${r.id}','${f}',this.value)"></div>`;
+    }
+    return `<div class="cf-item"><label>${lbl}</label><input type="${isN?'number':'text'}" ${isN?'step="0.01" min="0"':''} value="${r[f]||''}" oninput="updateRow('${r.id}','${f}',this.value)"></div>`;
+  }).join('');
+
+  // COMM select
+  const commSel = `<div class="cf-item"><label>COMM</label><select oninput="updateRow('${r.id}','comm',this.value)" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;font-weight:700;padding:4px 6px;font-family:'IBM Plex Mono',monospace">
+    <option${r.comm==='GCR'?' selected':''}>GCR</option>
+    <option${r.comm==='PER'?' selected':''}>PER</option>
+    <option${r.comm==='DGR'?' selected':''}>DGR</option>
+  </select></div>`;
+
+  dp.innerHTML = `
+    <div class="dp-header">
+      <div class="dp-route">${r.origin||'?'} → ${r.dest||'?'}</div>
+      <div class="dp-meta">
+        <span class="dp-tag" style="background:${tabBg};color:#fff">${r.comm||'GCR'}</span>
+        <span class="dp-tag" style="background:var(--surface2);color:var(--text)">${r.airline||'-'}</span>
+        ${vStr ? `<span class="dp-tag" style="background:var(--surface2);color:var(--text-muted);font-size:10px">Validity: ${vStr}</span>` : ''}
+      </div>
+      <!-- Tab selector -->
+      <div class="selling-tabs" style="margin-top:8px">
+        <button class="st-btn ${tab==='gcr'?'active gcr':''}" onclick="setDetailTab('gcr')">GCR</button>
+        <button class="st-btn ${tab==='per'?'active per':''}" onclick="setDetailTab('per')">PER</button>
+        <button class="st-btn ${tab==='dgr'?'active dgr':''}" onclick="setDetailTab('dgr')">DGR</button>
+      </div>
+    </div>
+
+    <div class="dp-body">
+      <!-- Selling rates -->
+      <div class="dp-section">
+        <div class="dp-sec-title">Selling Rate (USD) <span style="font-weight:400;font-size:9px">Auto | Final (กรอกได้) | กำไร THB</span></div>
+        <div class="rate-grid">${rateCards}</div>
+        <div class="surcharge-row">${scCards}</div>
+      </div>
+
+      <!-- Profit summary -->
+      <div class="dp-section">
+        <div class="dp-sec-title">กำไร THB (Shipment) · %Revenue</div>
+        <div class="profit-bar">${profitCards}</div>
+      </div>
+
+      <!-- Cost inputs -->
+      <div class="dp-section">
+        <div class="dp-sec-title">Cost ต้นทุน (THB) — ไม่รวม Handling</div>
+        <div class="cost-form">
+          <div class="cost-grid">
+            ${commSel}
+            ${costInputs}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="copy-bar">
+      <button class="cbtn cbtn-red" onclick="copyDetailHTML()">🎨 Copy Final มีสี</button>
+      <button class="cbtn" onclick="copyDetailTSV()">📋 Copy Excel</button>
+      <button class="cbtn" onclick="duplicateRoute('${r.id}')">⧉ Duplicate</button>
+      <button class="del-route-btn" onclick="deleteRoute('${r.id}')">🗑 ลบ Route</button>
+    </div>`;
+}
+
+function setDetailTab(tab){
+  detailTab = tab;
+  renderDetail();
+}
+
+function refreshRateCards(){
+  // Re-render just the rate cards without rebuilding the whole detail
+  const r = rows.find(x => x.id === selectedId);
+  if(!r) return;
+  const tab = detailTab;
+  const sel = calcSelling(r, tab);
+  const man = (manualSell[r.id]||{})[tab]||{};
+  const kg = calcProfitKg(r, tab);
+  const BANDS = ['p45','p100','p300','p500','p1000'];
+  BANDS.forEach(f => {
+    const autoVal = sel[f]||'';
+    const finalVal = man[f]!==undefined ? man[f] : autoVal;
+    const thb = kg[f]||'';
+    const n = parseFloat(thb);
+    const clr = !thb?'#888':n>0?'var(--green)':n<0?'#c0440a':'#888';
+    const card = document.querySelector(`.rate-card[data-f="${f}"]`);
+    if(!card) return;
+    const autoEl = card.querySelector('.rc-auto');
+    const profEl = card.querySelector('.rc-profit');
+    if(autoEl) autoEl.textContent = autoVal||'-';
+    if(profEl){ profEl.textContent = thb||'-'; profEl.style.color = clr; }
+  });
+  renderProfitOnly();
+}
+
+function updManual(rid, tab, f, v){
+  if(!manualSell[rid]) manualSell[rid] = {};
+  if(!manualSell[rid][tab]) manualSell[rid][tab] = {};
+  manualSell[rid][tab][f] = v;
+  renderSidebar();
+  renderProfitOnly();
+  triggerAS();
+}
+
+function renderProfitOnly(){
+  // Re-render just profit section without rebuilding entire detail
+  const r = rows.find(x => x.id === selectedId);
+  if(!r) return;
+  const tab = detailTab;
+  const kg = calcProfitKg(r, tab);
+  const pct = calcProfitPct(r, tab);
+  const profitBands = [{lbl:'+45',f:'p45'},{lbl:'+100',f:'p100'},{lbl:'+300',f:'p300'},{lbl:'+500',f:'p500'},{lbl:'+1000',f:'p1000'}];
+  const pb = document.querySelector('.profit-bar');
+  if(!pb) return;
+  pb.innerHTML = profitBands.map(({lbl, f}) => {
+    const thb = kg[f] || '', p = pct[f] || '';
+    const n = parseFloat(thb), pn = parseFloat(p);
+    const clr = !thb ? 'var(--text-muted)' : n > 0 ? 'var(--green)' : n < 0 ? '#c0440a' : 'var(--text-muted)';
+    const pclr = !p ? 'var(--text-muted)' : pn > 5 ? 'var(--green)' : pn > 0 ? '#7a5500' : '#c0440a';
+    return `<div class="pb-item"><div class="pb-lbl">${lbl}</div><div class="pb-thb" style="color:${clr}">${thb||'-'}</div><div class="pb-pct" style="color:${pclr}">${p||'-'}</div></div>`;
+  }).join('');
+}
+
+function updateRow(id, f, v){
+  const r = rows.find(x => x.id == id);
+  if(!r) return;
+  r[f] = v;
+  renderSidebar();
+  if(f === 'comm' || f === 'origin' || f === 'dest' || f === 'airline') renderDetail();
+  else refreshRateCards();
+  triggerAS();
+}
+
+/* ═══════════════════════════════════════════════
+   ROUTE MANAGEMENT
+═══════════════════════════════════════════════ */
+function addNewRoute(){
+  const id = 'r' + Date.now() + Math.floor(Math.random()*999);
+  const r = {id, origin:'BKK', dest:'', airline:'', transit:'', operate:'DAILY', tt:'1', comm:'GCR', min:'', norm:'', p45:'', p100:'', p300:'', p500:'', p1000:'', fuel:'', crisis:'', msc:'', service:'', aircraft:'', terminal:'', remark:''};
+  rows.push(r);
+  selectedId = id;
+  renderSidebar();
+  renderDetail();
+  triggerAS();
+}
+
+function duplicateRoute(id){
+  const r = rows.find(x => x.id == id);
+  if(!r) return;
+  const nr = JSON.parse(JSON.stringify(r));
+  nr.id = 'r' + Date.now() + Math.floor(Math.random()*999);
+  rows.push(nr);
+  selectedId = nr.id;
+  renderSidebar();
+  renderDetail();
+  triggerAS();
+}
+
+function clearAllRoutes(){
+  if(!confirm('ลบ Route ทั้งหมด (' + rows.length + ' routes)?')) return;
+  saveHistory(true);
+  rows = []; manualSell = {}; favorites = new Set();
+  selectedId = null;
+  renderSidebar(); renderDetail(); triggerAS();
+}
+
+function deleteRoute(id){
+  if(!confirm('ลบ Route นี้?')) return;
+  rows = rows.filter(x => x.id != id);
+  favorites.delete(id);
+  delete manualSell[id];
+  selectedId = rows.length ? rows[rows.length-1].id : null;
+  renderSidebar();
+  renderDetail();
+  triggerAS();
+}
+
+function toggleFav(id){
+  if(favorites.has(id)) favorites.delete(id);
+  else favorites.add(id);
+  renderSidebar();
+  triggerAS();
+}
+
+/* ═══════════════════════════════════════════════
+   COPY FOR DETAIL
+═══════════════════════════════════════════════ */
+function copyDetailHTML(){
+  const r = rows.find(x => x.id === selectedId);
+  if(!r) return;
+  const tab = detailTab;
+  const sel = calcSelling(r, tab);
+  const man = (manualSell[r.id]||{})[tab]||{};
+  const getV = f => { const mv=man[f]; return mv!==undefined?mv:(sel[f]||''); };
+  const HDR_D = ['ORIGIN','DEST','AIRLINE','MIN','NORMAL','+45','+100','+300','+500','+1000','FUEL','CRISIS','MSC'];
+  const SELL_F_D = ['min','norm','p45','p100','p300','p500','p1000','fuel','crisis','msc'];
+  const vals = [r.origin||'-', r.dest||'-', r.airline||'-', ...SELL_F_D.map(f=>getV(f)||'-')];
+  const hbg = '#8b1a1a';
+  const ths = 'border:1px solid #000;padding:6px 10px;font-family:Arial,sans-serif;font-size:11px;font-weight:bold;text-align:center;background:' + hbg + ';color:#fff;white-space:nowrap;';
+  const tds = 'border:1px solid #000;padding:5px 10px;font-family:Arial,sans-serif;font-size:12px;text-align:center;background:#fff;color:#1a3a6b;font-weight:bold;white-space:nowrap;';
+  const hdrRow = HDR_D.map(h => '<th style="'+ths+'">'+h+'</th>').join('');
+  const dataRow = vals.map(v => '<td style="'+tds+'">'+(v||'-')+'</td>').join('');
+  const html = '<table style="border-collapse:collapse;"><thead><tr>'+hdrRow+'</tr></thead><tbody><tr>'+dataRow+'</tr></tbody></table>';
+  doClip(null, html, null);
+  showToast('📋 คัดลอกแล้ว');
+}
+
+function copyDetailTSV(){
+  const r = rows.find(x => x.id === selectedId);
+  if(!r) return;
+  const tab = detailTab;
+  const sel = calcSelling(r, tab);
+  const man = (manualSell[r.id]||{})[tab]||{};
+  const SELL_F_D = ['min','norm','p45','p100','p300','p500','p1000','fuel','crisis','msc'];
+  const HDR_D = 'ORIGIN	DEST	AIRLINE	MIN	NORMAL	+45	+100	+300	+500	+1000	FUEL	CRISIS	MSC';
+  const vals = [r.origin||'', r.dest||'', r.airline||'', ...SELL_F_D.map(f=>{ const mv=man[f]; return mv!==undefined?mv:(sel[f]||''); })];
+  doClip(HDR_D + '\n' + vals.join('\t'), null, null);
+  showToast('📋 คัดลอก Excel แล้ว');
+}
+
+function showToast(msg){
+  let t = document.getElementById('toast');
+  if(!t){ t = document.createElement('div'); t.id = 'toast'; t.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#1a7a3c;color:#fff;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:600;z-index:9999;transition:opacity .4s'; document.body.appendChild(t); }
+  t.textContent = msg; t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.style.opacity = '0'; }, 2000);
+}
+
+/* ═══════════════════════════════════════════════
+   SETTINGS PANEL ACCORDION
+═══════════════════════════════════════════════ */
+function toggleSP(hdr){
+  const body = hdr.nextElementSibling;
+  const chev = hdr.querySelector('.sp-hdr-chev');
+  const closed = body.classList.toggle('closed');
+  if(chev) chev.classList.toggle('open', !closed);
+}
+
+/* ═══════════════════════════════════════════════
+   SUMMARY
+═══════════════════════════════════════════════ */
+function renderSummary(){
+  const sc = document.getElementById('sumCards');
+  if(!sc) return;
+  const tot = {gcr:0, per:0, dgr:0};
+  rows.forEach(r => {
+    ['gcr','per','dgr'].forEach(t => {
+      const kg = calcProfitKg(r, t);
+      const v = parseFloat(kg.p45||0);
+      if(!isNaN(v)) tot[t] += v;
+    });
+  });
+  sc.innerHTML = `
+    <div class="sum-card"><div class="sl">Routes</div><div class="sv">${rows.length}</div></div>
+    <div class="sum-card"><div class="sl">GCR +45 รวม</div><div class="sv" style="color:#9ab8f0">${tot.gcr.toFixed(0)} ฿</div></div>
+    <div class="sum-card"><div class="sl">PER +45 รวม</div><div class="sv" style="color:#80c8a0">${tot.per.toFixed(0)} ฿</div></div>
+    <div class="sum-card"><div class="sl">DGR +45 รวม</div><div class="sv" style="color:#f0a8a8">${tot.dgr.toFixed(0)} ฿</div></div>`;
+}
+
+/* ═══════════════════════════════════════════════
+   THEME
+═══════════════════════════════════════════════ */
+function toggleTheme(){
+  darkMode = !darkMode;
+  document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+  document.getElementById('themeBtn').textContent = darkMode ? '☀' : '🌙';
+  setLS('dark', darkMode ? '1' : '0');
+}
+
+/* ═══════════════════════════════════════════════
+   HISTORY
+═══════════════════════════════════════════════ */
+function saveHistory(silent){
+  const _p = silent ? 'Auto checkpoint' : prompt('หมายเหตุ Version (ไม่จำเป็น)', '');
+  if(_p === null) return;
+  const note = _p || 'Saved';
+  const cfg = {};
+  document.querySelectorAll('input[id],select[id]').forEach(el=>{ if(el.id && el.type!=='file') cfg[el.id]=el.value; });
+  history_.unshift({ts:Date.now(), rows:JSON.parse(JSON.stringify(rows)), manualSell:JSON.parse(JSON.stringify(manualSell)), cfg, note});
+  if(history_.length > 20) history_ = history_.slice(0, 20);
+  setLS('history', JSON.stringify(history_));
+  if(!silent){ renderHistory(); showToast('✓ บันทึก Version: ' + note); }
+}
+function restoreHistory(idx){
+  if(!confirm('กู้คืน Version นี้?')) return;
+  saveHistory(true);
+  const snap = history_[idx];
+  rows = JSON.parse(JSON.stringify(snap.rows));
+  manualSell = JSON.parse(JSON.stringify(snap.manualSell));
+  Object.keys(snap.cfg).forEach(id=>{ const el=document.getElementById(id); if(el) el.value=snap.cfg[id]; });
+  selectedId = rows.length ? rows[0].id : null;
+  renderSidebar(); renderDetail(); triggerAS();
+}
+function clearHistory(){ if(!confirm('ลบประวัติ?')) return; history_=[]; setLS('history','[]'); renderHistory(); }
+function renderHistory(){
+  const el = document.getElementById('histList'); if(!el) return;
+  if(!history_.length){ el.innerHTML='<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:11px">ยังไม่มีประวัติ</div>'; return; }
+  el.innerHTML = history_.map((h,i)=>{
+    const dt = new Date(h.ts);
+    const ds = dt.toLocaleDateString('th-TH') + ' ' + dt.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+    return `<div class="hist-entry"><span class="hist-time">${ds}</span><span class="hist-note">${h.note} · ${h.rows.length}r</span><button class="hist-restore" onclick="restoreHistory(${i})">↩</button></div>`;
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════════
+   CW CALC
+═══════════════════════════════════════════════ */
+function calcCW(){
+  const pcs=gn(document.getElementById('cw_pcs').value)||1;
+  const l=gn(document.getElementById('cw_l').value), w=gn(document.getElementById('cw_w').value), h=gn(document.getElementById('cw_h').value);
+  const aw=gn(document.getElementById('cw_aw').value);
+  const factor=gn(document.getElementById('cw_factor').value)||6000;
+  const volKg=l*w*h*pcs/factor;
+  const cw=Math.ceil(Math.max(aw,volKg)*2)/2;
+  document.getElementById('cw_vol').textContent=volKg.toFixed(2);
+  document.getElementById('cw_cw').textContent=cw.toFixed(1);
+  document.getElementById('cw_tvol').textContent=(l*w*h*pcs/1000000).toFixed(3);
+}
+
+/* ═══════════════════════════════════════════════
+   IMPORT
+═══════════════════════════════════════════════ */
+function openImport(){ document.getElementById('importModal').style.display='flex'; }
+function closeImport(){ document.getElementById('importModal').style.display='none'; document.getElementById('impPaste').value=''; document.getElementById('impPreviewArea').style.display='none'; document.getElementById('impConfirmBtn').style.display='none'; impParsed=[]; impHeaders=[]; }
+function readFile(file){ const r=new FileReader(); r.onload=e=>parseImportText(e.target.result); r.readAsText(file,'UTF-8'); }
+function parsePasted(){ parseImportText(document.getElementById('impPaste').value); }
+function parseImportText(text){
+  if(!text.trim()) return;
+  const lines=text.trim().split('\n').map(l=>l.trim()).filter(l=>l);
+  const sep=lines[0].includes('\t')?'\t':',';
+  impHeaders=lines[0].split(sep).map(h=>h.trim().replace(/^"|"$/g,''));
+  impParsed=lines.slice(1).map(l=>l.split(sep).map(c=>c.trim().replace(/^"|"$/g,'')));
+  showImpPreview();
+}
+function showImpPreview(){
+  if(!impParsed.length) return;
+  document.getElementById('impPreview').innerHTML=`<table><thead><tr>${impHeaders.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${impParsed.slice(0,5).map(row=>`<tr>${row.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+  const ourC=['origin','dest','airline','transit','operate','tt','comm','min','norm','p45','p100','p300','p500','p1000','fuel','crisis','msc','service','aircraft','terminal','remark'];
+  const ourL=['ORIGIN','DEST','AIRLINE','TRANSIT','OPERATE','T/T','COMM','MIN','NORMAL','+45','+100','+300','+500','+1000','FUEL','CRISIS','MSC','SERVICE','AIRCRAFT','TERMINAL','REMARK'];
+  document.getElementById('colMapArea').innerHTML=ourC.map((col,i)=>{
+    const gi=impHeaders.findIndex(h=>h.toUpperCase()===ourL[i]||h.toUpperCase()===col.toUpperCase());
+    const opts=['<option value="">— skip —</option>',...impHeaders.map((h,j)=>`<option value="${j}"${j===gi?' selected':''}>${h}</option>`)].join('');
+    return `<div class="col-map-row"><span style="font-weight:600">${ourL[i]}</span><span>→</span><select class="col-map-sel" id="map_${col}">${opts}</select></div>`;
+  }).join('');
+  document.getElementById('impPreviewArea').style.display='block';
+  document.getElementById('impConfirmBtn').style.display='inline-flex';
+}
+function confirmImport(){
+  const ourC=['origin','dest','airline','transit','operate','tt','comm','min','norm','p45','p100','p300','p500','p1000','fuel','crisis','msc','service','aircraft','terminal','remark'];
+  let added=0;
+  impParsed.forEach(row=>{
+    const r={id:'r'+Date.now()+Math.floor(Math.random()*9999),origin:'BKK',dest:'',airline:'',transit:'',operate:'DAILY',tt:'1',comm:'GCR',min:'',norm:'',p45:'',p100:'',p300:'',p500:'',p1000:'',fuel:'',crisis:'',msc:'',service:'',aircraft:'',terminal:'',remark:''};
+    ourC.forEach(col=>{const sel=document.getElementById('map_'+col);if(sel&&sel.value!==''){const idx=parseInt(sel.value);if(idx>=0&&row[idx]!==undefined)r[col]=row[idx];}});
+    if(!['GCR','PER','DGR'].includes((r.comm||'').toUpperCase())) r.comm='GCR';
+    else r.comm=r.comm.toUpperCase();
+    rows.push(r); added++;
+  });
+  renderSidebar(); triggerAS(); closeImport();
+  showToast('✓ นำเข้า ' + added + ' routes');
+  if(rows.length) { selectedId = rows[rows.length-1].id; renderDetail(); }
+}
+
+/* ═══════════════════════════════════════════════
+   COPY UTILS
+═══════════════════════════════════════════════ */
+function doClip(text, html, btn){
+  const tc = text || stripH(html);
+  const hc = html || '<pre>' + text + '</pre>';
+  if(window.ClipboardItem && navigator.clipboard && navigator.clipboard.write){
+    try{ navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([hc],{type:'text/html'}),'text/plain':new Blob([tc],{type:'text/plain'})})]).then(()=>{ if(btn){const o=btn.textContent;btn.textContent='✓';btn.classList.add('copied');setTimeout(()=>{btn.textContent=o;btn.classList.remove('copied');},2000);} }).catch(()=>fbCopy(tc,btn)); return; } catch(e){}
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext){ navigator.clipboard.writeText(tc).then(()=>{ if(btn){const o=btn.textContent;btn.textContent='✓';setTimeout(()=>btn.textContent=o,2000);} }).catch(()=>fbCopy(tc,btn)); return; }
+  fbCopy(tc, btn);
+}
+function fbCopy(t, btn){ const ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;top:-999px;opacity:0';document.body.appendChild(ta);ta.focus();ta.select();try{if(document.execCommand('copy')&&btn){const o=btn.textContent;btn.textContent='✓';setTimeout(()=>btn.textContent=o,2000);}}catch(e){}document.body.removeChild(ta);}
+function stripH(h){ const d=document.createElement('div');d.innerHTML=h;return d.textContent||''; }
+
+/* ═══════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════ */
+
+/* ─── Password Lock ─── */
+const _PW = 'pricingnyl2026';
+function checkPW(){
+  const v = document.getElementById('pwInput').value;
+  if(v === _PW){
+    document.getElementById('pwOverlay').style.display = 'none';
+    sessionStorage.setItem('af_auth','1');
+    document.getElementById('pwInput').value = '';
+  } else {
+    const inp = document.getElementById('pwInput');
+    inp.classList.add('error');
+    document.getElementById('pwErr').textContent = '❌ รหัสผ่านไม่ถูกต้อง';
+    setTimeout(() => inp.classList.remove('error'), 400);
+    inp.value = ''; inp.focus();
+  }
+}
+// Auto-unlock if already authenticated this session
+if(sessionStorage.getItem('af_auth')==='1'){
+  document.getElementById('pwOverlay').style.display = 'none';
+}
+
+loadSaved();
+['exRateRev','exRateCost','exRateConv','handling'].forEach((id,i)=>{
+  const el=document.getElementById(id);
+  const defs=['33','32','32.50','31'];
+  if(el && (el.value===''||el.value==='0'||el.value==='null')) el.value=defs[i];
+});
+if(rows.length===0){
+  rows.push({id:'r1',origin:'BKK',dest:'SGN',airline:'VN',transit:'DIRECT',operate:'DAILY',tt:'1',comm:'GCR',min:'',norm:'',p45:'53',p100:'48',p300:'48',p500:'48',p1000:'48',fuel:'7',crisis:'',msc:'',service:'General',aircraft:'NBD',terminal:'TG',remark:''});
+  triggerAS();
+}
+if(!document.getElementById('validity').value)
+  document.getElementById('validity').value=new Date().toISOString().split('T')[0];
+
+selectedId = rows[0]?.id || null;
+renderSidebar();
+renderDetail();
+renderHistory();
+
+document.addEventListener('paste', e => {
+  if(document.getElementById('importModal').style.display==='flex'){
+    const t=e.clipboardData.getData('text');
+    if(t){ document.getElementById('impPaste').value=t; parsePasted(); }
+  }
+});
+document.querySelectorAll('input[id],select[id]').forEach(el => el.addEventListener('input', () => { triggerAS(); renderSidebar(); if(selectedId) renderDetail(); }));
+document.getElementById('validity').addEventListener('change', () => { triggerAS(); renderSidebar(); renderDetail(); });
+
+</script>
+</body>
+</html>
